@@ -1,5 +1,5 @@
-from node import Node
-from doubly_linked_list import DoublyLinkedList
+from .node import Node
+from .doubly_linked_list import DoublyLinkedList
 
 class Transacao:
     """Representa uma negociação executada."""
