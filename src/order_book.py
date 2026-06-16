@@ -1,3 +1,5 @@
+import time
+
 from .node import Node
 from .doubly_linked_list import DoublyLinkedList
 
@@ -155,6 +157,14 @@ class MotorNegociacao:
                     preco_fechamento = melhor_compra.preco
                 else:
                     preco_fechamento = melhor_venda.preco
+                transacao = Transacao(
+                    melhor_compra.id,
+                    melhor_venda.id,
+                    preco_fechamento,
+                    qtd_negociada,
+                    time.time()
+                )
+                self.livro.historico.adicionar(transacao)
                 melhor_compra.quantidade -= qtd_negociada
                 melhor_venda.quantidade -= qtd_negociada
                 if self.verbose:
