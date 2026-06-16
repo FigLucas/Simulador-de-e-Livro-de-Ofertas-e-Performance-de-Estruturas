@@ -133,11 +133,12 @@ class MotorNegociacao:
     def processar_fila_para_o_livro(self):
         while not self.fila.estaVazia():
             ordem_atual = self.fila.remove()
-            self.livro.inserir_ordem(ordem_atual)
-            self.pilha.empilha(ordem_atual.id)
-            if self.verbose:
-                print(f"Ordem {ordem_atual.id} movida da fila para o Livro de Ofertas.")
-        self.processar_match()
+            ordem_inserida = self.livro.inserir_ordem(ordem_atual)
+            if ordem_inserida:
+                self.pilha.empilha(ordem_atual.id)
+                if self.verbose:
+                    print(f"Ordem {ordem_atual.id} movida da fila para o Livro de Ofertas.")
+                self.processar_match()
 
     def processar_match(self):
         if self.verbose:
