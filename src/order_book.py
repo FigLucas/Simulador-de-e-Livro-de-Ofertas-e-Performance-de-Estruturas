@@ -209,11 +209,14 @@ class MotorNegociacao:
             if self.verbose: 
                 print("Nada para desfazer. A pilha está vazia.")
             return
-        id_para_cancelar = self.pilha.desempilha()
-        if self.livro.ordem_existe(id_para_cancelar):
-            self.livro.remover_ordem_por_id(id_para_cancelar)
+        while not self.pilha.estaVazia():
+            id_para_cancelar = self.pilha.desempilha()
+            if self.livro.ordem_existe(id_para_cancelar):
+                self.livro.remover_ordem_por_id(id_para_cancelar)
+                if self.verbose:
+                    print(f"Sucesso: Ordem {id_para_cancelar} cancelada e removida do livro.")
+                return
             if self.verbose:
-                print(f"Sucesso: Ordem {id_para_cancelar} cancelada e removida do livro.")
-        else:
-            if self.verbose:
-                print(f"Ordem {id_para_cancelar} já foi totalmente executada. Nada foi removido.")
+                print(f"Ordem {id_para_cancelar} ja foi totalmente executada. Procurando ordem anterior ativa.")
+        if self.verbose:
+            print("Nenhuma ordem ativa encontrada para desfazer.")
