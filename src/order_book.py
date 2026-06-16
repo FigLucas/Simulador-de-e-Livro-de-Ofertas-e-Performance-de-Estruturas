@@ -53,11 +53,6 @@ class HistoricoTransacoes:
             current = current.next
             idx += 1
 
-    def limpar(self):
-        self.head = None
-        self.tail = None
-        self.size = 0
-
 class RegistroIds:
     """Lista encadeada simples para registrar IDs ja recebidos pelo motor."""
     def __init__(self):
@@ -98,9 +93,9 @@ class LivroOfertas:
             print(f"Erro: Ordem com ID {order.id} já existe.")
             return False
         novo_no = Node(order)
-        if order.tipo == 'C':
+        if order.eCompra():
             self.compras.insert_ordered(novo_no)
-        elif order.tipo == 'V':
+        elif order.eVenda():
             self.vendas.insert_ordered(novo_no)
         else:
             print(f"Erro: Tipo '{order.tipo}' inválido. Use 'C' ou 'V'.")
@@ -179,8 +174,8 @@ class MotorNegociacao:
             if melhor_compra.preco >= melhor_venda.preco:
                 qtd_negociada = min (melhor_compra.quantidade, melhor_venda.quantidade)
                 if qtd_negociada <= 0:
-                    if melhor_compra.quantidade <= 0: self.livro.remover_ordem_por_id(melhor_compra.id)
-                    if melhor_venda.quantidade <= 0: self.livro.remover_ordem_por_id(melhor_venda.id)
+                    if melhor_compra.quantidade <= 0: self.livro.compras.remove_first()
+                    if melhor_venda.quantidade <= 0: self.livro.vendas.remove_first()
                     continue
                 if melhor_compra.timestamp < melhor_venda.timestamp:
                     preco_fechamento = melhor_compra.preco
@@ -194,14 +189,14 @@ class MotorNegociacao:
                     time.time()
                 )
                 self.livro.historico.adicionar(transacao)
-                melhor_compra.quantidade -= qtd_negociada
-                melhor_venda.quantidade -= qtd_negociada
+                melhor_compra.reduzQuantidade(qtd_negociada)
+                melhor_venda.reduzQuantidade(qtd_negociada)
                 if self.verbose:
                     print(f"Transação efetuada! {qtd_negociada} unidades fechadas a R$ {preco_fechamento:.2f}")
-                if melhor_compra.quantidade == 0:
-                    self.livro.remover_ordem_por_id(melhor_compra.id)
-                if melhor_venda.quantidade == 0:
-                    self.livro.remover_ordem_por_id(melhor_venda.id)
+                if melhor_compra.estaExecutada():
+                    self.livro.compras.remove_first()
+                if melhor_venda.estaExecutada():
+                    self.livro.vendas.remove_first()
             else:
                 break
 

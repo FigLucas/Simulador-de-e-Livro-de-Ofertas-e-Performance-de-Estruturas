@@ -40,14 +40,6 @@ class Fila:
             raise Exception("A fila esta vazia!")
         return self.fimFila.data
 
-    def existeOrdem(self, id: int):
-        atual = self.inicioFila
-        while atual is not None:
-            if atual.data.id == id:
-                return True
-            atual = atual.next
-        return False
-
     def insere(self, valor):
         novo = Node(valor)
         if self.estaVazia():

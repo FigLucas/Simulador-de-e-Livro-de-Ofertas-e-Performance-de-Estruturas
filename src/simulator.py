@@ -66,26 +66,3 @@ class Simulador:
 
         return fim - inicio
 
-
-
-    def testar_carga(self, quantidades):
-        """
-        Executa simulacoes com diferentes quantidades
-        de ordens.
-        """
-
-        resultados = {}
-
-
-        for quantidade in quantidades:
-
-            tempo = self.medir_tempo_execucao(
-                lambda:
-                self.gerar_ordens(quantidade)
-            )
-
-
-            resultados[quantidade] = tempo
-
-
-        return resultados

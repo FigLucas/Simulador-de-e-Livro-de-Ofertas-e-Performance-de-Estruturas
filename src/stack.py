@@ -28,14 +28,6 @@ class Pilha:
             raise Exception("A pilha esta vazia!")
         return self.topoPilha.data
 
-    def existeValor(self, valor):
-        atual = self.topoPilha
-        while atual is not None:
-            if atual.data == valor:
-                return True
-            atual = atual.next
-        return False
-
     def empilha(self, valor):
         novo = Node(valor)
         novo.next = self.topoPilha
