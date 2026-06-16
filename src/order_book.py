@@ -55,6 +55,31 @@ class HistoricoTransacoes:
         self.tail = None
         self.size = 0
 
+class RegistroIds:
+    """Lista encadeada simples para registrar IDs ja recebidos pelo motor."""
+    def __init__(self):
+        self.head = None
+        self.tail = None
+        self.size = 0
+
+    def contem(self, id_ordem):
+        atual = self.head
+        while atual:
+            if atual.data == id_ordem:
+                return True
+            atual = atual.next
+        return False
+
+    def adicionar(self, id_ordem):
+        novo_no = Node(id_ordem)
+        if self.head is None:
+            self.head = novo_no
+            self.tail = novo_no
+        else:
+            self.tail.next = novo_no
+            self.tail = novo_no
+        self.size += 1
+
 class LivroOfertas:
     """
     Livro de ofertas que gerencia ordens de compra e venda.
@@ -118,15 +143,15 @@ class MotorNegociacao:
         self.fila = fila_entrada
         self.livro = livro_ofertas
         self.pilha = pilha_undo
-        self.ids_utilizados = set()
+        self.ids_utilizados = RegistroIds()
         self.verbose = verbose
         
     def receber_nova_ordem(self, ordem):
-        if ordem.id in self.ids_utilizados:
+        if self.ids_utilizados.contem(ordem.id):
             print(f"Erro: A ordem com ID {ordem.id} já foi processada.")
             return
         self.fila.insere(ordem)
-        self.ids_utilizados.add(ordem.id)
+        self.ids_utilizados.adicionar(ordem.id)
         if self.verbose:
             print(f"Ordem {ordem.id} adicionada com sucesso.")
             
