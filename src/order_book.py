@@ -1,4 +1,5 @@
 import time
+from datetime import datetime
 
 from .node import Node
 from .doubly_linked_list import DoublyLinkedList
@@ -13,7 +14,9 @@ class Transacao:
         self.timestamp = timestamp
 
     def __str__(self):
-        return f"Compra {self.id_compra} / Venda {self.id_venda} | Preço: {self.preco} | Qtd: {self.quantidade} | {self.timestamp}"
+        horario_formatado = datetime.fromtimestamp(self.timestamp).strftime("%d/%m/%Y %H:%M:%S")
+
+        return (f"Compra {self.id_compra} / Venda {self.id_venda} | "f"Preço: R$ {self.preco:.2f} | "f"Qtd: {self.quantidade} | "f"Horário: {horario_formatado}")
 
 class HistoricoTransacoes:
     """Lista encadeada para armazenar transações em ordem cronológica."""
