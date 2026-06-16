@@ -10,6 +10,8 @@ class DoublyLinkedList:
         order_type (str): 'buy' (decrescente por preço) ou 'sell' (crescente por preço)
     """
     def __init__(self, order_type='buy'):
+        if order_type not in ('buy', 'sell'):
+            raise ValueError("order_type deve ser 'buy' ou 'sell'.")
         self.head = None
         self.tail = None
         self.size = 0
@@ -29,12 +31,14 @@ class DoublyLinkedList:
     def print_list(self):
         """Exibe todos os elementos na ordem da lista."""
         current = self.head
-        elements = []
+        saida = ""
         while current:
             order = current.data
-            elements.append(f"ID:{order.id} Preço:{order.preco} Qtd:{order.quantidade}")
+            if saida != "":
+                saida += " -> "
+            saida += f"ID:{order.id} Preço:{order.preco} Qtd:{order.quantidade}"
             current = current.next
-        print(f"Lista ({self.order_type}): " + " -> ".join(elements))
+        print(f"Lista ({self.order_type}): {saida}")
 
     # ---------- Método auxiliar para comparar ordem ----------
     def _should_come_before(self, new_order, current_order):
@@ -118,6 +122,8 @@ class DoublyLinkedList:
         else:
             self.head = self.head.next
             self.head.prev = None
+        removed.next = None
+        removed.prev = None
         self.size -= 1
         return removed
 

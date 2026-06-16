@@ -1,3 +1,6 @@
+import time
+from datetime import datetime
+
 from .node import Node
 from .doubly_linked_list import DoublyLinkedList
 
@@ -11,7 +14,9 @@ class Transacao:
         self.timestamp = timestamp
 
     def __str__(self):
-        return f"Compra {self.id_compra} / Venda {self.id_venda} | Preço: {self.preco} | Qtd: {self.quantidade} | {self.timestamp}"
+        horario_formatado = datetime.fromtimestamp(self.timestamp).strftime("%d/%m/%Y %H:%M:%S")
+
+        return (f"Compra {self.id_compra} / Venda {self.id_venda} | "f"Preço: R$ {self.preco:.2f} | "f"Qtd: {self.quantidade} | "f"Horário: {horario_formatado}")
 
 class HistoricoTransacoes:
     """Lista encadeada para armazenar transações em ordem cronológica."""
@@ -48,10 +53,30 @@ class HistoricoTransacoes:
             current = current.next
             idx += 1
 
-    def limpar(self):
+class RegistroIds:
+    """Lista encadeada simples para registrar IDs ja recebidos pelo motor."""
+    def __init__(self):
         self.head = None
         self.tail = None
         self.size = 0
+
+    def contem(self, id_ordem):
+        atual = self.head
+        while atual:
+            if atual.data == id_ordem:
+                return True
+            atual = atual.next
+        return False
+
+    def adicionar(self, id_ordem):
+        novo_no = Node(id_ordem)
+        if self.head is None:
+            self.head = novo_no
+            self.tail = novo_no
+        else:
+            self.tail.next = novo_no
+            self.tail = novo_no
+        self.size += 1
 
 class LivroOfertas:
     """
@@ -68,9 +93,9 @@ class LivroOfertas:
             print(f"Erro: Ordem com ID {order.id} já existe.")
             return False
         novo_no = Node(order)
-        if order.tipo == 'C':
+        if order.eCompra():
             self.compras.insert_ordered(novo_no)
-        elif order.tipo == 'V':
+        elif order.eVenda():
             self.vendas.insert_ordered(novo_no)
         else:
             print(f"Erro: Tipo '{order.tipo}' inválido. Use 'C' ou 'V'.")
@@ -116,26 +141,27 @@ class MotorNegociacao:
         self.fila = fila_entrada
         self.livro = livro_ofertas
         self.pilha = pilha_undo
-        self.ids_utilizados = set()
+        self.ids_utilizados = RegistroIds()
         self.verbose = verbose
         
     def receber_nova_ordem(self, ordem):
-        if ordem.id in self.ids_utilizados:
+        if self.ids_utilizados.contem(ordem.id):
             print(f"Erro: A ordem com ID {ordem.id} já foi processada.")
             return
         self.fila.insere(ordem)
-        self.ids_utilizados.add(ordem.id)
+        self.ids_utilizados.adicionar(ordem.id)
         if self.verbose:
             print(f"Ordem {ordem.id} adicionada com sucesso.")
             
     def processar_fila_para_o_livro(self):
         while not self.fila.estaVazia():
             ordem_atual = self.fila.remove()
-            self.livro.inserir_ordem(ordem_atual)
-            self.pilha.empilha(ordem_atual.id)
-            if self.verbose:
-                print(f"Ordem {ordem_atual.id} movida da fila para o Livro de Ofertas.")
-        self.processar_match()
+            ordem_inserida = self.livro.inserir_ordem(ordem_atual)
+            if ordem_inserida:
+                self.pilha.empilha(ordem_atual.id)
+                if self.verbose:
+                    print(f"Ordem {ordem_atual.id} movida da fila para o Livro de Ofertas.")
+                self.processar_match()
 
     def processar_match(self):
         if self.verbose:
@@ -148,21 +174,29 @@ class MotorNegociacao:
             if melhor_compra.preco >= melhor_venda.preco:
                 qtd_negociada = min (melhor_compra.quantidade, melhor_venda.quantidade)
                 if qtd_negociada <= 0:
-                    if melhor_compra.quantidade <= 0: self.livro.remover_ordem_por_id(melhor_compra.id)
-                    if melhor_venda.quantidade <= 0: self.livro.remover_ordem_por_id(melhor_venda.id)
+                    if melhor_compra.quantidade <= 0: self.livro.compras.remove_first()
+                    if melhor_venda.quantidade <= 0: self.livro.vendas.remove_first()
                     continue
                 if melhor_compra.timestamp < melhor_venda.timestamp:
                     preco_fechamento = melhor_compra.preco
                 else:
                     preco_fechamento = melhor_venda.preco
-                melhor_compra.quantidade -= qtd_negociada
-                melhor_venda.quantidade -= qtd_negociada
+                transacao = Transacao(
+                    melhor_compra.id,
+                    melhor_venda.id,
+                    preco_fechamento,
+                    qtd_negociada,
+                    time.time()
+                )
+                self.livro.historico.adicionar(transacao)
+                melhor_compra.reduzQuantidade(qtd_negociada)
+                melhor_venda.reduzQuantidade(qtd_negociada)
                 if self.verbose:
                     print(f"Transação efetuada! {qtd_negociada} unidades fechadas a R$ {preco_fechamento:.2f}")
-                if melhor_compra.quantidade == 0:
-                    self.livro.remover_ordem_por_id(melhor_compra.id)
-                if melhor_venda.quantidade == 0:
-                    self.livro.remover_ordem_por_id(melhor_venda.id)
+                if melhor_compra.estaExecutada():
+                    self.livro.compras.remove_first()
+                if melhor_venda.estaExecutada():
+                    self.livro.vendas.remove_first()
             else:
                 break
 
@@ -174,10 +208,13 @@ class MotorNegociacao:
                 print("Nada para desfazer. A pilha está vazia.")
             return
         while not self.pilha.estaVazia():
-            id_para_cancelar = self.pilha.desempilha()      
+            id_para_cancelar = self.pilha.desempilha()
             if self.livro.ordem_existe(id_para_cancelar):
                 self.livro.remover_ordem_por_id(id_para_cancelar)
-                if self.verbose: print(f"Sucesso: Ordem {id_para_cancelar} cancelada e removida do livro.")
-                break 
-            else:
-                if self.verbose: print(f"Ordem {id_para_cancelar} já foi totalmente executada.")
+                if self.verbose:
+                    print(f"Sucesso: Ordem {id_para_cancelar} cancelada e removida do livro.")
+                return
+            if self.verbose:
+                print(f"Ordem {id_para_cancelar} ja foi totalmente executada. Procurando ordem anterior ativa.")
+        if self.verbose:
+            print("Nenhuma ordem ativa encontrada para desfazer.")
