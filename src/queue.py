@@ -18,6 +18,12 @@ class Fila:
             atual = atual.next
         return saida
 
+    def __iter__(self):
+        atual = self.inicioFila
+        while atual is not None:
+            yield atual.data
+            atual = atual.next
+
     def veTamanho(self):
         return self.tamanho
 

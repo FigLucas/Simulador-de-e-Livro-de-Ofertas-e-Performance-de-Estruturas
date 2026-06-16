@@ -2,6 +2,7 @@ import random
 import time
 
 from src.order import Ordem
+from src.queue import Fila
 
 
 class Simulador:
@@ -15,7 +16,10 @@ class Simulador:
         Gera uma unica ordem aleatoria.
         """
 
-        tipo = random.choice(["C", "V"])
+        if random.randint(0, 1) == 0:
+            tipo = "C"
+        else:
+            tipo = "V"
         preco = round(random.uniform(10, 500), 2)
         quantidade = random.randint(1, 100)
 
@@ -32,16 +36,16 @@ class Simulador:
 
     def gerar_ordens(self, quantidade):
         """
-        Gera uma lista com varias ordens.
+        Gera uma fila encadeada com varias ordens.
         """
 
-        ordens = []
+        ordens = Fila()
 
         for i in range(quantidade):
 
             ordem = self.gerar_ordem(i)
 
-            ordens.append(ordem)
+            ordens.insere(ordem)
 
         return ordens
 

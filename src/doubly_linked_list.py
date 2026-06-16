@@ -29,12 +29,14 @@ class DoublyLinkedList:
     def print_list(self):
         """Exibe todos os elementos na ordem da lista."""
         current = self.head
-        elements = []
+        saida = ""
         while current:
             order = current.data
-            elements.append(f"ID:{order.id} Preço:{order.preco} Qtd:{order.quantidade}")
+            if saida != "":
+                saida += " -> "
+            saida += f"ID:{order.id} Preço:{order.preco} Qtd:{order.quantidade}"
             current = current.next
-        print(f"Lista ({self.order_type}): " + " -> ".join(elements))
+        print(f"Lista ({self.order_type}): {saida}")
 
     # ---------- Método auxiliar para comparar ordem ----------
     def _should_come_before(self, new_order, current_order):
