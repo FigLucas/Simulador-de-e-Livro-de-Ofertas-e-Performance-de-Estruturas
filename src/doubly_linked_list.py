@@ -10,6 +10,8 @@ class DoublyLinkedList:
         order_type (str): 'buy' (decrescente por preço) ou 'sell' (crescente por preço)
     """
     def __init__(self, order_type='buy'):
+        if order_type not in ('buy', 'sell'):
+            raise ValueError("order_type deve ser 'buy' ou 'sell'.")
         self.head = None
         self.tail = None
         self.size = 0
@@ -120,6 +122,8 @@ class DoublyLinkedList:
         else:
             self.head = self.head.next
             self.head.prev = None
+        removed.next = None
+        removed.prev = None
         self.size -= 1
         return removed
 
