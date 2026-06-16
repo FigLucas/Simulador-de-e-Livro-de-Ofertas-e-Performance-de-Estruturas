@@ -1,8 +1,33 @@
+import random
 import time
 from src.order import Ordem
 from src.order_book import LivroOfertas, MotorNegociacao
 from src.queue import Fila
+from src.simulator import Simulador
 from src.stack import Pilha
+
+
+def demonstrar_ordens_aleatorias(quantidade=10):
+    print("\n--- Demonstracao com ordens aleatorias do Simulador ---")
+
+    random.seed(42)
+    simulador = Simulador()
+    ordens = simulador.gerar_ordens(quantidade)
+
+    fila = Fila()
+    livro = LivroOfertas()
+    pilha = Pilha()
+    motor = MotorNegociacao(fila, livro, pilha, verbose=False)
+
+    for ordem in ordens:
+        motor.receber_nova_ordem(ordem)
+
+    motor.processar_fila_para_o_livro()
+
+    print(f"\nForam geradas e processadas {quantidade} ordens aleatorias.")
+    print("Estado final do livro gerado pelo Simulador:")
+    livro.imprimir_livro()
+
 
 def main():
     print("--- Simulador de Livro de Ofertas ---")
@@ -47,6 +72,8 @@ def main():
     
     print("\nEstado do livro apos o Undo:")
     livro.imprimir_livro()
+
+    demonstrar_ordens_aleatorias()
 
 if __name__ == "__main__":
     main()
