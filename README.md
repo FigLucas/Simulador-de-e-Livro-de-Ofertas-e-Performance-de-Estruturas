@@ -2,6 +2,10 @@
 
 Projeto desenvolvido para a disciplina **SME0827 - Estruturas de Dados**.
 
+<p align="center">
+  <img width="900" alt="Arquitetura do Projeto" src="https://github.com/user-attachments/assets/c2df6cfc-b7f9-4843-bb22-7663926d7423" />
+</p>
+
 O projeto implementa um simulador de **livro de ofertas de compra e venda**. As ordens entram por uma fila, são inseridas em listas encadeadas ordenadas por prioridade de preço e tempo, podem gerar negociações quando há compatibilidade entre compra e venda, e as transações executadas ficam registradas em um histórico encadeado.
 
 ## Objetivo
@@ -150,6 +154,7 @@ Esse comportamento é esperado principalmente quando muitas ordens são inserida
     `-- node.py
     `-- order.py
     `-- order_book.py
+
     `-- queue.py
     `-- simulator.py
     `-- stack.py
